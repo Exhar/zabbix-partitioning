@@ -122,13 +122,7 @@ read DBADMINPASS
 mysql -B -h localhost -u $DBADMINUSER -p$DBADMINPASS -e "GRANT CREATE ROUTINE ON zabbix.* TO 'zabbix'@'localhost';"
 echo -e "\n"
 
-
-echo -ne "\nDo you want to backup the database (recommended) (Y/n): "
-read yn
-if [ "$yn" != "n" -a "$yn" != "N" ]; then
-        echo -e "\nEnter output file, press return for default of $DUMP_FILE"
-        read df
-        [ "$df" != "" ] && DUMP_FILE=$df
+        DUMP_FILE=$df
 
         #
         # Lock tables is needed for a good mysqldump
@@ -145,21 +139,11 @@ if [ "$yn" != "n" -a "$yn" != "N" ]; then
         else
                 echo "Mysqldump succeeded!, proceeding with upgrade..."
         fi
-else
-        echo "Are you certain you have a backup (y/N): "
-        read yn
-        [ "$yn" != 'y' -a "$yn" != "Y" ] && exit
-fi
-
 echo -e "\n\nReady to proceed:"
 
 echo -e "\nStarting yearly partioning at: $first_year"
 echo "and ending at: $last_year"
 echo "With $daily_history_min days of daily history"
-echo -e "\n\nReady to proceed (Y/n): "
-read yn
-[ "$yn" = 'n' -o "$yn" = "N" ] && exit
-
 
 
 DAILY="history history_log history_str history_text history_uint"
@@ -390,30 +374,20 @@ END //
 DELIMITER ;
 _EOF_
 
-echo -e "\n\nReady to apply script to database (Y/n): "
-read yn
-if [ "$yn" != "n" -a "$yn" != "N" ]; then
         echo -en "\nProceeding, please wait.  This may take a while\n\n"
         mysql --skip-column-names -h ${DBHOST} -u ${DBUSER} -p${DBPASS} <$SQL
-fi
 
 conf=/etc/zabbix/zabbix_server.conf
 echo -e "\nDo you want to update the /etc/zabbix/zabbix_server.conf"
 echo -n "to disable housekeeping (Y/n): "
-read yn
-if [ "$yn" != "n" -a "$yn" != "N" ]; then
         cp $conf ${conf}.bak
         sed  -i "s/^# DisableHousekeeping=0/DisableHousekeeping=1/" $conf
         sed  -i "s/^DisableHousekeeping=0/DisableHousekeeping=1/" $conf
         /etc/init.d/zabbix-server stop
         sleep 5
         /etc/init.d/zabbix-server start
-fi
 
 tmpfile=/tmp/cron$$
-echo -ne "\nDo you want to update the crontab (Y/n): "
-read yn
-if [ "$yn" != "n" -a "$yn" != "N" ]; then
         where=
         while [ "$where" = "" ]; do
                 echo "The crontab entry can be either in /etc/cron.daily, or added"
@@ -427,9 +401,7 @@ if [ "$yn" != "n" -a "$yn" != "N" ]; then
                 fi
         done
 
-        echo -en "\nEnter email of who should get the daily housekeeping reports: "
-        read mailto
-        [ "$mailto" = "" ] && mailto=root
+        mailto=root
         mkdir -p /etc/zabbix/cron.d
         cat >/etc/zabbix/cron.d/housekeeping.sh <<_EOF_
 #!/bin/bash
