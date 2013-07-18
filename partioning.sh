@@ -115,18 +115,8 @@ shift $((OPTIND-1))
 echo "Ready to partition tables."
 
 echo -e "\nReady to update permissions of Zabbix user to create routines\n"
-echo -n "Enter root DB user: "
-read DBADMINUSER
-echo -n "Enter $DBADMINUSER password: "
-read DBADMINPASS
-mysql -B -h localhost -u $DBADMINUSER -p$DBADMINPASS -e "GRANT CREATE ROUTINE ON zabbix.* TO 'zabbix'@'localhost';"
+mysql -B -h localhost -u $DBUSER -p$DBPASS -e "GRANT CREATE ROUTINE ON zabbix.* TO 'zabbix'@'localhost';"
 echo -e "\n"
-
-        DUMP_FILE=$df
-
-        #
-        # Lock tables is needed for a good mysqldump
-        #
         echo "GRANT LOCK TABLES ON zabbix.* TO '${DBUSER}'@'${DBHOST}' IDENTIFIED BY '${DBPASS}';" | mysql -h${DBHOST} -u${DBADMINUSER} --password=${DBADMINPASS}
 
         mysqldump --opt -h ${DBHOST} -u ${DBUSER} -p${DBPASS} zabbix --result-file=${DUMP_FILE}
@@ -378,8 +368,6 @@ _EOF_
         mysql --skip-column-names -h ${DBHOST} -u ${DBUSER} -p${DBPASS} <$SQL
 
 conf=/etc/zabbix/zabbix_server.conf
-echo -e "\nDo you want to update the /etc/zabbix/zabbix_server.conf"
-echo -n "to disable housekeeping (Y/n): "
         cp $conf ${conf}.bak
         sed  -i "s/^# DisableHousekeeping=0/DisableHousekeeping=1/" $conf
         sed  -i "s/^DisableHousekeeping=0/DisableHousekeeping=1/" $conf
@@ -388,19 +376,7 @@ echo -n "to disable housekeeping (Y/n): "
         /etc/init.d/zabbix-server start
 
 tmpfile=/tmp/cron$$
-        where=
-        while [ "$where" = "" ]; do
-                echo "The crontab entry can be either in /etc/cron.daily, or added"
-                echo -e "to the crontab for root\n"
-                echo -n "Do you want to add this to the /etc/cron.daily directory (Y/n): "
-                read where
-                [ "$where" = "" -o "$where" = "y" ] && where="Y"
-                if [ "$where" != "y" -a "$where" != "Y" -a "$where" != "n" -a "$where" != "N" ]; then
-                        where=""
-                        echo "Response not recognized, please try again"
-                fi
-        done
-
+where="Y"
         mailto=root
         mkdir -p /etc/zabbix/cron.d
         cat >/etc/zabbix/cron.d/housekeeping.sh <<_EOF_
@@ -430,4 +406,3 @@ _EOF_
                 crontab $tmpfile
                 rm $tmpfile
         fi
-fi
