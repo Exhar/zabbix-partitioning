@@ -117,7 +117,7 @@ echo "Ready to partition tables."
 echo -e "\nReady to update permissions of Zabbix user to create routines\n"
 mysql -B -h localhost -u ${DBUSER} -p${DBPASS} -e "GRANT CREATE ROUTINE ON zabbix.* TO 'zabbix'@'localhost';"
 echo -e "\n"
-        echo "GRANT LOCK TABLES ON zabbix.* TO '${DBUSER}'@'${DBHOST}' IDENTIFIED BY '${DBPASS}';" | mysql -h${DBHOST} -u${DBADMINUSER} --password=${DBADMINPASS}
+        echo "GRANT LOCK TABLES ON zabbix.* TO '${DBUSER}'@'${DBHOST}' IDENTIFIED BY '${DBPASS}';" | mysql -h${DBHOST} -u${DBUSER} --password=${DBPASS}
 
         mysqldump --opt -h ${DBHOST} -u ${DBUSER} -p${DBPASS} zabbix --result-file=${DUMP_FILE}
         rc=$?
