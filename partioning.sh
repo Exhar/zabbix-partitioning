@@ -387,7 +387,7 @@ tmpfile=/tmp/housekeeping\$\$
 
 date >\$tmpfile
 /usr/bin/mysql --skip-column-names -B -h localhost -u zabbix -pzabbix zabbix -e "CALL create_zabbix_partitions();" >>\$tmpfile 2>&1
-/bin/mail -s "Zabbix MySql Partition Housekeeping" \$MAILTO <\$tmpfile
+/usr/bin/mail -s "Zabbix MySql Partition Housekeeping" \$MAILTO <\$tmpfile
 rm -f \$tmpfile
 _EOF_
         chmod +x /etc/zabbix/cron.d/housekeeping.sh
