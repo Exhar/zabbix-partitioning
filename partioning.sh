@@ -393,11 +393,10 @@ _EOF_
         chmod +x /etc/zabbix/cron.d/housekeeping.sh
         chown -R zabbix.zabbix /etc/zabbix
         if [ "$where" = "Y" ]; then
-                cat >/etc/cron.daily/zabbix.housekeeping <<_EOF_
-#!/bin/bash
-/etc/zabbix/cron.d/housekeeping.sh
+                cat >/etc/cron.d/zabbix-housekeeping <<_EOF_
+59 23 * * * root /bin/bash /etc/zabbix/cron.d/housekeeping.sh
 _EOF_
-                chmod +x /etc/cron.daily/zabbix.housekeeping
+                chmod +x /etc/cron.d/zabbix-housekeeping
         else
                 crontab -l >$tmpfile
                 cat >>$tmpfile <<_EOF_
